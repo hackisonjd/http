@@ -35,7 +35,16 @@ func TestServerAcceptsConnections(t *testing.T) {
 	}
 
 	t.Log("client connected to server")
-	conn.Close()
+
+	// Test response
+	_, err = conn.Write([]byte("GET / HTTP/1.0\r\n\r\n"))
+	if err != nil {
+		t.Fatalf("could not write to connection: %v", err)
+	}
+
+	if err := conn.Close(); err != nil {
+		t.Logf("could not close connection: %v", err)
+	}
 
 	err = server.Shutdown()
 	if err != nil {
