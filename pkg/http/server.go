@@ -18,12 +18,14 @@ type Server struct {
 	port     string
 	listener net.Listener // listener for the server
 	mu       sync.Mutex   // mutex to protect the listener
+	ready    chan struct{}
 }
 
 func NewServer(host, port string) *Server {
 	return &Server{
-		host: host,
-		port: port,
+		host:  host,
+		port:  port,
+		ready: make(chan struct{}),
 	}
 }
 
@@ -33,12 +35,17 @@ func (s *Server) ListenAndServe() error {
 
 	// Create a listener, surrounded by a mutex to prevent problems
 	var err error
+
 	s.mu.Lock()
 	s.listener, err = net.Listen("tcp", addr)
-	s.mu.Unlock()
 	if err != nil {
+		s.mu.Unlock()
 		return err
 	}
+	s.mu.Unlock()
+
+	// Signal that the server is ready
+	close(s.ready)
 
 	// we were able to bind to the address, open a server and wait for connections
 	for {
@@ -49,6 +56,19 @@ func (s *Server) ListenAndServe() error {
 
 		go s.handleConnection(conn)
 	}
+}
+
+func (s *Server) GetAddr() (string, error) {
+	<-s.ready
+
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	if s.listener == nil {
+		return "", fmt.Errorf("server not started")
+	}
+
+	return s.listener.Addr().String(), nil
 }
 
 func (s *Server) Shutdown() error {

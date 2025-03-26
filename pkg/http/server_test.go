@@ -26,7 +26,10 @@ func TestServerAcceptsConnections(t *testing.T) {
 
 	time.Sleep(100 * time.Millisecond)
 
-	addr := server.listener.Addr().String()
+	addr, err := server.GetAddr()
+	if err != nil {
+		t.Fatalf("could not get server address: %v", err)
+	}
 
 	// Simulate a client connecting to the server
 	conn, err := net.Dial("tcp", addr)
