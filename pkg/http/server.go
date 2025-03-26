@@ -1,6 +1,7 @@
 package http
 
 import (
+	"fmt"
 	"net"
 	"sync"
 )
@@ -61,7 +62,11 @@ func (s *Server) Shutdown() error {
 }
 
 func (s *Server) handleConnection(conn net.Conn) {
-	defer conn.Close()
+	defer func() {
+		if err := conn.Close(); err != nil {
+			fmt.Printf("could not close connection: %v\n", err)
+		}
+	}()
 	// Read connection data
 	buf := make([]byte, 1024)
 	_, err := conn.Read(buf)
@@ -69,9 +74,14 @@ func (s *Server) handleConnection(conn net.Conn) {
 		return
 	}
 
+	// Error check for conn.Close()
+
 	// Print request data
 	response := "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: 13\r\n\r\nHello, World!"
 
 	// Send response back to client
-	conn.Write([]byte(response))
+	if _, err := conn.Write([]byte(response)); err != nil {
+		fmt.Printf("could not write response: %v\n", err)
+		return
+	}
 }
