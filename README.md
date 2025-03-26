@@ -1,0 +1,1 @@
+Implementation of an HTTP server written in Go as a thought exercise.

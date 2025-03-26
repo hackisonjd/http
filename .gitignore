@@ -1,0 +1,15 @@
+# Bin
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Test
+*.test
+
+# Output of coverage
+*.out
+
+# Dependency directories
+vendor/
