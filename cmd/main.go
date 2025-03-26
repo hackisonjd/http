@@ -5,5 +5,5 @@ import (
 )
 
 func main() {
-	fmt.Println("Hello, World!")
+	fmt.Println("this is just a dummy file for now, implementation will come soon")
 }
